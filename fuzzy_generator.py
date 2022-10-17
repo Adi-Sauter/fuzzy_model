@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 
 # section 3
@@ -34,3 +35,15 @@ class Fuzzy:
         for val in membership_value:
             comp_deg *= val
         return comp_deg
+
+
+class RuleTables:
+    def create_tables(self, x1, x2):    # index the ruletables by prim_table.loc[x1_label][x2_label]
+        """
+        :param x1: labels of input 1
+        :param x2: labels of input 2
+        :return: primary ruletable, secondary ruletable, filled with NaNs, respectively
+        """
+        prim_table = pd.DataFrame(columns=x1, index=x2)
+        sec_table = pd.DataFrame(columns=x1, index=x2)
+        return prim_table, sec_table
