@@ -20,7 +20,7 @@ class Fuzzy:
         x_p = np.array(x_p)
         y_p = np.array(y_p)
         weights = np.array(weights)
-        b = np.inner(weights, y_p) / sum(w_array)
+        b = np.inner(weights, y_p) / sum(weights)
         return b
 
     def calc_compatibility_degree(self, x, mu):
