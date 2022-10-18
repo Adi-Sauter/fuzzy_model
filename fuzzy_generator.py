@@ -68,3 +68,7 @@ def create_gaussian(mu, sigma):
     return lambda x: np.exp(-np.power(x - mu, 2.) / (2 * np.power(sigma, 2.)))
 
 
+def membership_function(gaussians, x):
+    return [gaussian(x) for gaussian in gaussians]
+
+
