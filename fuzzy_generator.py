@@ -47,3 +47,24 @@ class RuleTables:
         prim_table = pd.DataFrame(columns=x1, index=x2)
         sec_table = pd.DataFrame(columns=x1, index=x2)
         return prim_table, sec_table
+
+
+def generate_fuzzy_sets(mu_sigma_list):
+    """
+    :param mu_sigma_list:
+    :return:
+    """
+    gaussians = []
+    for sublist in mu_sigma_list:
+        # print(f"mu: {sublist[0]}, sigma: {sublist[1]}")
+        mu = sublist[0]
+        sigma = sublist[1]
+        # gaussian = lambda x: np.exp(-np.power(x - mu, 2.) / (2 * np.power(sigma, 2.)))
+        gaussians.append(create_gaussian(mu, sigma))
+    return gaussians
+
+
+def create_gaussian(mu, sigma):
+    return lambda x: np.exp(-np.power(x - mu, 2.) / (2 * np.power(sigma, 2.)))
+
+
