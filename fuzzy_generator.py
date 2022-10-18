@@ -37,22 +37,21 @@ class Fuzzy:
         return comp_deg
 
 
-class RuleTables:
-    def create_tables(self, x1, x2):    # index the ruletables by prim_table.loc[x1_label][x2_label]
-        """
-        :param x1: labels of input 1
-        :param x2: labels of input 2
-        :return: primary ruletable, secondary ruletable, filled with NaNs, respectively
-        """
-        prim_table = pd.DataFrame(columns=x1, index=x2)
-        sec_table = pd.DataFrame(columns=x1, index=x2)
-        return prim_table, sec_table
+def create_tables(self, x1, x2):    # index the ruletables by prim_table.loc[x1_label][x2_label]
+    """
+    :param x1: labels of input 1
+    :param x2: labels of input 2
+    :return: primary ruletable, secondary ruletable, filled with NaNs, respectively
+    """
+    prim_table = pd.DataFrame(columns=x1, index=x2)
+    sec_table = pd.DataFrame(columns=x1, index=x2)
+    return prim_table, sec_table
 
 
 def generate_fuzzy_sets(mu_sigma_list):
     """
     :param mu_sigma_list:
-    :return:
+    :return: list of gaussians representing the fuzzy set
     """
     gaussians = []
     for sublist in mu_sigma_list:
@@ -70,5 +69,14 @@ def create_gaussian(mu, sigma):
 
 def membership_function(gaussians, x):
     return [gaussian(x) for gaussian in gaussians]
+
+
+def sort_by_membership_value(gaussians, x):
+    """
+    :param x: input value
+    :return: list of indices, sorted by decreasing membership value
+    """
+    return np.argsort(membership_function(gaussians, x))
+
 
 
