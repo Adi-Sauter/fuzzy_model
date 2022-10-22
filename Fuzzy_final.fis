@@ -1,0 +1,45 @@
+[System]
+Name='Fuzzy_final'
+Type='mamdani'
+Version=2.0
+NumInputs=2
+NumOutputs=1
+NumRules=5
+AndMethod='min'
+OrMethod='max'
+ImpMethod='min'
+AggMethod='max'
+DefuzzMethod='centroid'
+
+[Input1]
+Name='Driver_style'
+Range=[0 1]
+NumMFs=3
+MF1='Slow':'gaussmf',[0.15 0.15]
+MF2='Good':'gaussmf',[0.15 0.5]
+MF3='Fast':'gaussmf',[0.15 0.85]
+
+[Input2]
+Name='Conversation'
+Range=[0 1]
+NumMFs=3
+MF1='Boring':'gaussmf',[0.3 0]
+MF2='OK':'gaussmf',[0.2 0.5]
+MF3='Entertaining':'gaussmf',[0.3 1]
+
+[Output1]
+Name='Rating'
+Range=[0 1]
+NumMFs=5
+MF1='Terrible':'gaussmf',[0.1 0]
+MF2='Bad':'gaussmf',[0.1 0.25]
+MF3='Good':'gaussmf',[0.1 0.75]
+MF4='Perfect':'gaussmf',[0.1 1]
+MF5='Average':'gaussmf',[0.1 0.5]
+
+[Rules]
+2 1, 2 (1) : 1
+1 1, 1 (1) : 1
+2 2, 5 (1) : 1
+2 3, 3 (1) : 1
+3 3, 4 (1) : 1
