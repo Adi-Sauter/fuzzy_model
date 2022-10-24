@@ -1,7 +1,12 @@
 {\rtf1\ansi\ansicpg1252\cocoartf2638
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Bold;\f1\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;\red251\green2\blue7;}
-{\*\expandedcolortbl;;\cssrgb\c100000\c14913\c0;}
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Bold;\f1\fswiss\fcharset0 Helvetica;\f2\fmodern\fcharset0 Courier;
+}
+{\colortbl;\red255\green255\blue255;\red251\green2\blue7;\red74\green80\blue93;\red0\green0\blue0;
+\red0\green0\blue0;\red184\green93\blue213;\red30\green33\blue39;\red72\green168\blue181;\red155\green162\blue177;
+\red197\green136\blue84;}
+{\*\expandedcolortbl;;\cssrgb\c100000\c14913\c0;\csgenericrgb\c29020\c31373\c36471;\csgray\c0\c0;
+\cssrgb\c0\c0\c0;\csgenericrgb\c72157\c36471\c83529;\csgenericrgb\c11765\c12941\c15294;\csgenericrgb\c28235\c65882\c70980;\csgenericrgb\c60784\c63529\c69412;
+\csgenericrgb\c77255\c53333\c32941;}
 \paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
@@ -21,4 +26,15 @@
 - Degree of certainty sinnvoll in einer der Funktionen zur\'fcckgeben\
 \
 - Funktion zum Klassifizieren von neuen samples (inferred output)\
+\
+- Problem: ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all() bei 
+\f2\fs26 \cf3 \cb4 if np.isnan(prim_table.loc[prim_label_1][prim_label_2]):\
+\
+
+\f1\fs24 \cf5 \'97> daher:  
+\f2\fs26 \cf6 \cb7 if not \cf8 type\cf9 (\cf10 prim_table\cf9 .loc[prim_label_1][prim_label_2]) \cf6 is \cf8 float\cf9 :\
+\cf3 \cb4 \
+		\'97> NaN is of type float, therefore this works\
+
+\f1\fs24 \cf0 \cb1  \
 }

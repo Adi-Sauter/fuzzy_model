@@ -48,14 +48,14 @@ def calc_b(x, a, partition):
     :param x: list with output in last position and inputs as other elements
     :param a: positive constant
     :param partition: list of membership functions in the form of gaussian distributions
-    :return:
+    :return: b
     """
     x_p = x[:-1]
     #x_p = [sublist[:-1] for sublist in x]
     # x_p = [x for sublist in x_p for x in sublist]  # flatten x_p to get one list without any sublists
     y_p = x[-1]
     #y_p = [sublist[-1] for sublist in x]
-    weights = calc_compatibility_degree(x_p, partition)**a
+    weights = [calc_compatibility_degree(x_p[0], partition) ** a, calc_compatibility_degree(x_p[1], partition) ** a]
     #x_p = np.array(x_p)
     y_p = np.array(y_p)
     weights = np.array(weights)
@@ -91,7 +91,10 @@ def sort_by_membership_value(partition, x):
     :param x: input value
     :return: list of indices, sorted by decreasing membership value
     """
-    return np.argsort(membership_function(partition, x)), sorted(membership_function(partition, x))
+    membership_values = membership_function(partition, x)
+    sorted_indices = np.argsort(membership_values)
+    sorted_membership_values = sorted(membership_values)
+    return sorted_indices, sorted_membership_values
 
 
 def get_b_values(partition, labels, b):
@@ -127,13 +130,15 @@ def fill_table(partition_in_1, partition_in_2, partition_out, x, prim_table, sec
         get_b_values(partition_in_1.fuzzy_partition, partition_in_1.labels, x)  # calculate argmax(mu(x))
     sec_label_1, sec_label_2, sec_1_cf, sec_2_cf = \
         get_b_values(partition_in_2.fuzzy_partition, partition_in_2.labels, x)  # calculate argmax_2(mu(x))
-    if np.isnan(prim_table.loc[prim_label_1][prim_label_2]):
+    #if np.isnan(prim_table.loc[prim_label_1][prim_label_2]).any():
+    if not type(prim_table.loc[prim_label_1][prim_label_2]) is float:
         prim_table.loc[prim_label_1][prim_label_2] = [b_star, b_star_cf]
     else:
         label, cf = prim_table.loc[prim_label_1][prim_label_2]
         if cf < b_star_cf:
             prim_table.loc[prim_label_1][prim_label_2] = [b_star, b_star_cf]
-    if np.isnan(sec_table.loc[sec_label_1][sec_label_2]):
+    #if np.isnan(sec_table.loc[sec_label_1][sec_label_2]).any():
+    if not type(sec_table.loc[sec_label_1][sec_label_2]) is float:
         sec_table.loc[sec_label_1][sec_label_2] = [b_star_star, b_star_star_cf]
     else:
         label, cf = sec_table.loc[sec_label_1][sec_label_2]
