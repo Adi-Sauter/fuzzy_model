@@ -105,10 +105,13 @@ def get_b_values(partition, labels, b):
     return b_star, b_star_star
 
 
-def fill_table(partition, labels, x, prim_table, sec_table, a, input_1_label, input_2_label):
-    b = calc_b(x, a, partition)
-    b_star, b_star_star = get_b_values(partition, labels, b)  # these are the labels of the output
-    prim_table[input_1_label, input_2_label] = [b_star] # add degree of certainty here!!
+def fill_table(partition_in_1, partition_in_2, partition_out, labels, x, prim_table, sec_table, a):
+    b = calc_b(x, a, partition_out)
+    b_star, b_star_star = get_b_values(partition_out, partition_out.labels, b)  # these are the labels of the output
+    prim_label_1, prim_label_2 = get_b_values(partition_in_1, partition_in_1.labels, x)  # calculate argmax(mu(x))
+    sec_label_1, sec_label_2 = get_b_values(partition_in_2, partition_in_2.labels, x)  # calculate argmax_2(mu(x))
+    prim_table[prim_label_1, prim_label_2] = [b_star]  # add degree of certainty here as second element in list!!
+    sec_table[sec_label_1, sec_label_2] = [b_star_star]
 
 
 '''
