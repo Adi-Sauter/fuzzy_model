@@ -32,7 +32,7 @@ class FuzzyPartition:
 
     def generate_fuzzy_partition(self, mu_sigma_list):
         """
-        :param mu_sigma_list:
+        :param mu_sigma_list: list of lists, containing the mus and sigmas of the fuzzy partition
         :return: list of gaussians representing the fuzzy set
         """
         gaussians = []
@@ -45,15 +45,17 @@ class FuzzyPartition:
 
 def calc_b(x, a, partition):
     """
-    :param x: m input-output pairs (x_p,y_p), p=1,2,...,m
+    :param x: list with output in last position and inputs as other elements
     :param a: positive constant
     :param partition: list of membership functions in the form of gaussian distributions
     :return:
     """
-    x_p = [sublist[:-1] for sublist in x]
+    x_p = x[:-1]
+    #x_p = [sublist[:-1] for sublist in x]
     # x_p = [x for sublist in x_p for x in sublist]  # flatten x_p to get one list without any sublists
-    y_p = [sublist[-1] for sublist in x]
-    weights = calc_compatibility_degree(x_p, partition) ** a
+    y_p = x[-1]
+    #y_p = [sublist[-1] for sublist in x]
+    weights = calc_compatibility_degree(x_p, partition)**a
     #x_p = np.array(x_p)
     y_p = np.array(y_p)
     weights = np.array(weights)
@@ -89,7 +91,7 @@ def sort_by_membership_value(partition, x):
     :param x: input value
     :return: list of indices, sorted by decreasing membership value
     """
-    return np.argsort(membership_function(partition, x))   #, sorted(membership_function(partition, x))
+    return np.argsort(membership_function(partition, x)), sorted(membership_function(partition, x))
 
 
 def get_b_values(partition, labels, b):
@@ -99,19 +101,45 @@ def get_b_values(partition, labels, b):
     :param b: calculated b-value
     :return:
     """
-    sorted_values = sort_by_membership_value(partition, b) # in ascending order
-    b_star = labels[sorted_values[-1]]
-    b_star_star = labels[sorted_values[-2]]
-    return b_star, b_star_star
+    sorted_labels, sorted_values = sort_by_membership_value(partition, b)  # in ascending order
+    b_star = labels[sorted_labels[-1]]
+    b_star_star = labels[sorted_labels[-2]]
+    b_star_cf = sorted_values[-1]
+    b_star_star_cf = sorted_values[-2]
+    return b_star, b_star_star, b_star_cf, b_star_star_cf
 
 
-def fill_table(partition_in_1, partition_in_2, partition_out, labels, x, prim_table, sec_table, a):
-    b = calc_b(x, a, partition_out)
-    b_star, b_star_star = get_b_values(partition_out, partition_out.labels, b)  # these are the labels of the output
-    prim_label_1, prim_label_2 = get_b_values(partition_in_1, partition_in_1.labels, x)  # calculate argmax(mu(x))
-    sec_label_1, sec_label_2 = get_b_values(partition_in_2, partition_in_2.labels, x)  # calculate argmax_2(mu(x))
-    prim_table[prim_label_1, prim_label_2] = [b_star]  # add degree of certainty here as second element in list!!
-    sec_table[sec_label_1, sec_label_2] = [b_star_star]
+def fill_table(partition_in_1, partition_in_2, partition_out, x, prim_table, sec_table, a):
+    """
+    :param partition_in_1: fuzzy partition on input 1
+    :param partition_in_2: fuzzy partition on input 2
+    :param partition_out: fuzzy partition on output
+    :param x: input
+    :param prim_table: primary rule table
+    :param sec_table: secondary rule table
+    :param a: alpha value
+    :return: primary and secondary rule table
+    """
+    b = calc_b(x, a, partition_out.fuzzy_partition)
+    b_star, b_star_star, b_star_cf, b_star_star_cf = \
+        get_b_values(partition_out.fuzzy_partition, partition_out.labels, b)  # these are the labels of the output
+    prim_label_1, prim_label_2, prim_1_cf, prim_2_cf = \
+        get_b_values(partition_in_1.fuzzy_partition, partition_in_1.labels, x)  # calculate argmax(mu(x))
+    sec_label_1, sec_label_2, sec_1_cf, sec_2_cf = \
+        get_b_values(partition_in_2.fuzzy_partition, partition_in_2.labels, x)  # calculate argmax_2(mu(x))
+    if np.isnan(prim_table.loc[prim_label_1][prim_label_2]):
+        prim_table.loc[prim_label_1][prim_label_2] = [b_star, b_star_cf]
+    else:
+        label, cf = prim_table.loc[prim_label_1][prim_label_2]
+        if cf < b_star_cf:
+            prim_table.loc[prim_label_1][prim_label_2] = [b_star, b_star_cf]
+    if np.isnan(sec_table.loc[sec_label_1][sec_label_2]):
+        sec_table.loc[sec_label_1][sec_label_2] = [b_star_star, b_star_star_cf]
+    else:
+        label, cf = sec_table.loc[sec_label_1][sec_label_2]
+        if cf < b_star_star_cf:
+            sec_table.loc[sec_label_1][sec_label_2] = [b_star_star, b_star_star_cf]
+    return prim_table, sec_table
 
 
 '''
@@ -137,23 +165,42 @@ class FuzzyExample:
 
     def plot_fuzzy_partitions(self):
         fig, axs = plt.subplots(3)
-        x = np.linspace(0, 5, 100)
-        for gaussian in self.fuzzy_in_1.fuzzy_partition:
-            axs[0].plot(x, gaussian(x))
+        x = np.linspace(0, 1, 100)
+        for gaussian, label in zip(self.fuzzy_in_1.fuzzy_partition, self.fuzzy_in_1.labels):
+            axs[0].plot(x, gaussian(x), label=label)
         axs[0].set_title(f'Input 1: {self.fuzzy_in_1.name}')
-        for gaussian in self.fuzzy_in_2.fuzzy_partition:
-            axs[1].plot(x, gaussian(x))
+        axs[0].legend(loc='lower left')
+        for gaussian, label in zip(self.fuzzy_in_2.fuzzy_partition, self.fuzzy_in_2.labels):
+            axs[1].plot(x, gaussian(x), label=label)
         axs[1].set_title(f'Input 2: {self.fuzzy_in_2.name}')
-        for gaussian in self.fuzzy_out.fuzzy_partition:
-            axs[2].plot(x, gaussian(x))
+        axs[1].legend(loc='lower left')
+        for gaussian, label in zip(self.fuzzy_out.fuzzy_partition, self.fuzzy_out.labels):
+            axs[2].plot(x, gaussian(x), label=label)
         axs[2].set_title(f'Output: {self.fuzzy_out.name}')
+        axs[2].legend(loc='lower left')
+        plt.show()
 
 
 def main():
-    #example = FuzzyExample()
-    #example.plot_fuzzy_sets()
-    #prim_table, sec_table = create_tables(example.fuzzy_in_1.labels, example.fuzzy_in_2.labels)
-    pass
+    # First, the two input variables:
+    driver_style_labels = ['slow', 'average', 'fast']
+    driver_style_mu_sigma = [[0.15, 0.15], [0.5, 0.2], [0.85, 0.15]]
+    conversation_labels = ['boring', 'ok', 'entertaining']
+    conversation_mu_sigma = [[0, 0.3], [0.5, 0.2], [1, 0.3]]
+    # Then, the output variable:
+    rating_labels = ['terrible', 'bad', 'average', 'good', 'perfect']
+    rating_mu_sigma = [[0, 0.1], [0.25, 0.1], [0.5, 0.1], [0.75, 0.1], [1, 0.1]]
+    example = FuzzyExample(driver_style_mu_sigma, conversation_mu_sigma, rating_mu_sigma,
+                           driver_style_labels, conversation_labels, rating_labels,
+                           'Driver style', 'Conversation', 'Rating')
+    #example.plot_fuzzy_partitions()
+    prim_table, sec_table = create_tables(example.fuzzy_in_1.labels, example.fuzzy_in_2.labels)
+    dat = pd.read_csv('dataset.csv', header=0, sep=';')
+    list_of_samples = [list(row) for row in dat.values]
+    alpha = 1
+    for sample in list_of_samples:
+        prim_table, sec_table = fill_table(example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out,
+                                           sample, prim_table, sec_table, alpha)
 
 
 if __name__ == "__main__":
