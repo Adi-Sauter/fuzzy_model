@@ -169,7 +169,7 @@ class FuzzyExample:
         self.fuzzy_out = FuzzyPartition(mu_sigma_list_out, labels_out, name_out)
 
     def plot_fuzzy_partitions(self):
-        fig, axs = plt.subplots(3)
+        fig, axs = plt.subplots(3, figsize=(10,10))
         x = np.linspace(0, 1, 100)
         for gaussian, label in zip(self.fuzzy_in_1.fuzzy_partition, self.fuzzy_in_1.labels):
             axs[0].plot(x, gaussian(x), label=label)
