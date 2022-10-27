@@ -1,11 +1,10 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from tabulate import tabulate
 
-# section 3
 
-
-def create_tables(x1, x2):    # index the ruletables by prim_table.loc[x1_label][x2_label]
+def create_tables(x1, x2):  # index the ruletables by prim_table.loc[x1_label][x2_label]
     """
     :param x1: labels of input 1
     :param x2: labels of input 2
@@ -19,6 +18,7 @@ def create_tables(x1, x2):    # index the ruletables by prim_table.loc[x1_label]
 class FuzzyPartition:
     def __init__(self, mu_sigma_list, labels, name):
         self.fuzzy_partition = self.generate_fuzzy_partition(mu_sigma_list)
+        self.mu_sigma_list = mu_sigma_list
         self.labels = labels
         self.name = name
 
@@ -47,24 +47,17 @@ def calc_b(x, a, partition_in_1, partition_in_2):
     """
     :param x: list with output in last position and inputs as other elements
     :param a: positive constant
-    :param partition: list of membership functions in the form of gaussian distributions
+    :param partition_in_1: list of membership functions of input 1 in the form of gaussian distributions
+    :param partition_in_2: list of membership functions of input 2 in the form of gaussian distributions
     :return: b
     """
-    x_p = x[:-1]
-    #print(f'x_p: {x_p}')
-    #x_p = [sublist[:-1] for sublist in x]
-    # x_p = [x for sublist in x_p for x in sublist]  # flatten x_p to get one list without any sublists
-    y_p = x[-1]
-    #print(f'y_p: {y_p}')
-    #y_p = [sublist[-1] for sublist in x]
+    x_p = x[0:2]  # get input values
+    y_p = x[-1]  # get output value
     weights = [calc_compatibility_degree(x_p[0], partition_in_1) ** a,
                calc_compatibility_degree(x_p[1], partition_in_2) ** a]
-    #print(f'weights: {weights}')
-    #x_p = np.array(x_p)
     y_p = np.array(y_p)
     weights = np.array(weights)
-    b = sum(weights*y_p) / sum(weights)
-    #print(f'b: {b}')
+    b = sum(weights * y_p) / sum(weights)
     return b
 
 
@@ -74,7 +67,6 @@ def calc_compatibility_degree(x, partition):
     :param partition: list of membership functions in the form of gaussian distributions
     :return: degree of compatibility of input vector x to the fuzzy if-then-rule
     """
-    #print(f'x in calc_compatibility_degree: {x}')
     membership_value = membership_function(partition, x)
     comp_deg = 1
     for val in membership_value:
@@ -88,7 +80,6 @@ def membership_function(partition, x):
     :param x: input value
     :return: list of membership values of x with each of the gaussians
     """
-    #print(f'x in membership function: {x}')
     return [gaussian(x) for gaussian in partition]
 
 
@@ -98,7 +89,6 @@ def sort_by_membership_value(partition, x):
     :param x: input value
     :return: list of indices, sorted by decreasing membership value
     """
-    #print(f'x in sort_by_membership_value: {x}')
     membership_values = membership_function(partition, x)
     sorted_indices = np.argsort(membership_values)
     sorted_membership_values = np.sort(membership_values)
@@ -112,7 +102,6 @@ def get_b_values(partition, labels, b):
     :param b: calculated b-value
     :return:
     """
-    #print(f'b in get_b_values: {b}')
     sorted_labels, sorted_values = sort_by_membership_value(partition, b)  # in ascending order
     b_star = labels[sorted_labels[-1]]
     b_star_star = labels[sorted_labels[-2]]
@@ -137,38 +126,23 @@ def fill_table(partition_in_1, partition_in_2, partition_out, x, prim_table, sec
         get_b_values(partition_out.fuzzy_partition, partition_out.labels, b)  # these are the labels of the output
     prim_label_1, sec_label_1, prim_1_cf, sec_1_cf = \
         get_b_values(partition_in_1.fuzzy_partition, partition_in_1.labels, x[0])  # calculate argmax(mu(x))
-    print(f'prim_label_1: {prim_label_1}, sec_label_1: {sec_label_1}, prim_1_cf: {prim_1_cf}, sec_1_cf: {sec_1_cf}')
+    # print(f'prim_label_1: {prim_label_1}, sec_label_1: {sec_label_1}, prim_1_cf: {prim_1_cf}, sec_1_cf: {sec_1_cf}')
     prim_label_2, sec_label_2, prim_2_cf, sec_2_cf = \
         get_b_values(partition_in_2.fuzzy_partition, partition_in_2.labels, x[1])  # calculate argmax_2(mu(x))
-    print(f'prim_label_2: {prim_label_2}, sec_label_2: {sec_label_2}, prim_2_cf: {prim_2_cf}, sec_2_cf: {sec_2_cf}')
-    #if np.isnan(prim_table.loc[prim_label_1][prim_label_2]).any():
+    # print(f'prim_label_2: {prim_label_2}, sec_label_2: {sec_label_2}, prim_2_cf: {prim_2_cf}, sec_2_cf: {sec_2_cf}')
     if type(prim_table.loc[prim_label_2][prim_label_1]) is float:
-        prim_table.loc[prim_label_2][prim_label_1] = [b_star, b_star_cf]
+        prim_table.loc[prim_label_2][prim_label_1] = [b_star, round(b_star_cf, 3)]
     else:
         label, cf = prim_table.loc[prim_label_2][prim_label_1]
         if cf < b_star_cf:
-            prim_table.loc[prim_label_2][prim_label_1] = [b_star, b_star_cf]
-    #if np.isnan(sec_table.loc[sec_label_1][sec_label_2]).any():
+            prim_table.loc[prim_label_2][prim_label_1] = [b_star, round(b_star_cf, 3)]
     if type(sec_table.loc[sec_label_2][sec_label_1]) is float:
-        sec_table.loc[sec_label_2][sec_label_1] = [b_star_star, b_star_star_cf]
+        sec_table.loc[sec_label_2][sec_label_1] = [b_star_star, round(b_star_star_cf, 3)]
     else:
         label, cf = sec_table.loc[sec_label_2][sec_label_1]
         if cf < b_star_star_cf:
-            sec_table.loc[sec_label_2][sec_label_1] = [b_star_star, b_star_star_cf]
+            sec_table.loc[sec_label_2][sec_label_1] = [b_star_star, round(b_star_star_cf, 3)]
     return prim_table, sec_table
-
-
-'''
-def get_cf_values(b_star, b_star_star, b_star_val, b_star_star_val):
-    """
-    :param b_star: fuzzy set with the highest membership value for input
-    :param b_star_star: fuzzy set with the second-highest membership value for input
-    :param b_star_val: highest membership value for input of one fuzzy set (b_star)
-    :param b_star_star_val: second-highest membership value for input of one fuzzy set (b_star_star)
-    :return: degrees of certainty for b_star and b_star_star
-    """
-    pass
-'''
 
 
 class FuzzyExample:
@@ -180,7 +154,7 @@ class FuzzyExample:
         self.fuzzy_out = FuzzyPartition(mu_sigma_list_out, labels_out, name_out)
 
     def plot_fuzzy_partitions(self):
-        fig, axs = plt.subplots(3, figsize=(10,10))
+        fig, axs = plt.subplots(3, figsize=(15, 15))
         x = np.linspace(0, 1, 100)
         for gaussian, label in zip(self.fuzzy_in_1.fuzzy_partition, self.fuzzy_in_1.labels):
             axs[0].plot(x, gaussian(x), label=label)
@@ -197,6 +171,25 @@ class FuzzyExample:
         plt.show()
 
 
+def classify_sample(sample, partition_in_1, partition_in_2, partition_out, a=1):
+    b = calc_b(sample, a, partition_in_1.fuzzy_partition, partition_in_2.fuzzy_partition)
+    b_star, b_star_star, b_star_cf, b_star_star_cf = get_b_values(partition_out.fuzzy_partition,
+                                                                  partition_out.labels, b)
+    membership_values_in_1 = np.array(membership_function(partition_in_1.fuzzy_partition, sample[0]))
+    membership_values_in_2 = np.array(membership_function(partition_in_2.fuzzy_partition, sample[1]))
+    b_star_bar = partition_out.mu_sigma_list[partition_out.labels.index(b_star)][0]
+    b_star_star_bar = partition_out.mu_sigma_list[partition_out.labels.index(b_star_star)][0]
+    inferred_output = ((sum(membership_values_in_1 * b_star_bar * b_star_cf
+                            + membership_values_in_1 * b_star_star_bar * b_star_star_cf)
+                        + sum(membership_values_in_2 * b_star_bar * b_star_cf
+                              + membership_values_in_2 * b_star_star_bar * b_star_star_cf))
+                       / (sum(membership_values_in_1 * b_star_cf
+                              + membership_values_in_1 * b_star_star_cf)
+                          + sum(membership_values_in_2 * b_star_cf
+                                + membership_values_in_2 * b_star_star_cf)))
+    return inferred_output
+
+
 def main():
     # First, the two input variables:
     driver_style_labels = ['slow', 'average', 'fast']
@@ -209,21 +202,23 @@ def main():
     example = FuzzyExample(driver_style_mu_sigma, conversation_mu_sigma, rating_mu_sigma,
                            driver_style_labels, conversation_labels, rating_labels,
                            'Driver style', 'Conversation', 'Rating')
-    #example.plot_fuzzy_partitions()
+    # example.plot_fuzzy_partitions()
     prim_table, sec_table = create_tables(example.fuzzy_in_1.labels, example.fuzzy_in_2.labels)
-    dat = pd.read_csv('dataset.csv', header=0, sep=';')
+    dat = pd.read_csv('dataset_test_outliers.csv', header=0, sep=';')
     list_of_samples = [list(row) for row in dat.values]
     alpha = 1
     for sample in list_of_samples:
         prim_table, sec_table = fill_table(example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out,
                                            sample, prim_table, sec_table, alpha)
-        print(f'{prim_table}, {sec_table}')
+    print('Primary rule table:')
+    print(tabulate(prim_table, headers=example.fuzzy_in_1.labels, tablefmt='fancy_grid'))
+    print('--------------------------------------------------------------------------------')
+    print('Secondary rule table:')
+    print(tabulate(sec_table, headers=example.fuzzy_in_1.labels, tablefmt='fancy_grid'))
+    class_sample = [0.75, 0.75]
+    inferred_output = classify_sample(class_sample, example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out)
+    print(f'inferred output of {class_sample}: {inferred_output}')
 
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
