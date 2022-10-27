@@ -274,15 +274,15 @@ def main():
     list_of_test_samples = [list(row) for row in test_samples.values]
     test_y = test_dat.iloc[:, 2]
     inferred_outputs = []
-    for sample in list_of_test_samples:
-        inferred_outputs.append(predict_sample(sample, example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out))
+    for sample, ground_truth in zip(list_of_test_samples, test_y):
+        inferred_output = predict_sample(sample, example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out)
+        inferred_outputs.append(inferred_output)
+        print(f'true model output: {ground_truth}, inferred output: {inferred_output}')
     print(inferred_outputs)
-
-    class_sample = [0.75, 0.75]
-    inferred_output = predict_sample(class_sample, example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out)
+    #inferred_output = predict_sample(class_sample, example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out)
     print('--------------------------------------------------------------------------------')
     print('\033[1mClassifying new samples \033[0m')
-    print(f'inferred output of {class_sample}: {round(inferred_output, 3)}')
+    #print(f'inferred output of {class_sample}: {round(inferred_output, 3)}')
 
     # assess performance score of the model
 
