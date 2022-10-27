@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from tabulate import tabulate
+from sklearn.metrics import mean_squared_error
 
 
 def create_tables(x1, x2):  # index the ruletables by prim_table.loc[x1_label][x2_label]
@@ -203,7 +204,7 @@ class FuzzyExample:
         plt.show()
 
 
-def classify_sample(sample, partition_in_1, partition_in_2, partition_out, a=1):
+def predict_sample(sample, partition_in_1, partition_in_2, partition_out, a=1):
     """
     :param sample: sample that should be classified
     :param partition_in_1: FuzzyPartition of input 1
@@ -251,12 +252,12 @@ def main():
     # create primary and secondary ruletable, filled with nan's
     prim_table, sec_table = create_tables(example.fuzzy_in_1.labels, example.fuzzy_in_2.labels)
     # read in dataset
-    dat = pd.read_csv('dataset_test_outliers.csv', header=0, sep=';')
+    train_dat = pd.read_csv('dataset_test_outliers.csv', header=0, sep=';')
     # create list of lists, containing the individual samples in the form of [input_1, input_2, output]
-    list_of_samples = [list(row) for row in dat.values]
+    list_of_train_samples = [list(row) for row in train_dat.values]
     alpha = 1
     # loop over all samples and fill the tables
-    for sample in list_of_samples:
+    for sample in list_of_train_samples:
         prim_table, sec_table = fill_table(example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out,
                                            sample, prim_table, sec_table, alpha)
     # printing the results
@@ -268,8 +269,17 @@ def main():
     print(tabulate(sec_table, headers=example.fuzzy_in_1.labels, tablefmt='fancy_grid'))
 
     # classify new_samples
+    test_dat = pd.read_csv('dataset_testset.csv', header=0, sep=';')
+    test_samples = test_dat.iloc[:, :2]
+    list_of_test_samples = [list(row) for row in test_samples.values]
+    test_y = test_dat.iloc[:, 2]
+    inferred_outputs = []
+    for sample in list_of_test_samples:
+        inferred_outputs.append(predict_sample(sample, example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out))
+    print(inferred_outputs)
+
     class_sample = [0.75, 0.75]
-    inferred_output = classify_sample(class_sample, example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out)
+    inferred_output = predict_sample(class_sample, example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out)
     print('--------------------------------------------------------------------------------')
     print('\033[1mClassifying new samples \033[0m')
     print(f'inferred output of {class_sample}: {round(inferred_output, 3)}')
