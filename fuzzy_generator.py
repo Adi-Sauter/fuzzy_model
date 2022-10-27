@@ -217,6 +217,7 @@ def main():
     for sample in list_of_samples:
         prim_table, sec_table = fill_table(example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out,
                                            sample, prim_table, sec_table, alpha)
+        print(f'{prim_table}, {sec_table}')
 
 
 if __name__ == "__main__":
