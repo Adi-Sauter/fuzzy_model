@@ -269,6 +269,8 @@ def main():
     print(tabulate(sec_table, headers=example.fuzzy_in_1.labels, tablefmt='fancy_grid'))
 
     # classify new_samples
+    print('--------------------------------------------------------------------------------')
+    print('\033[1mClassifying new samples \033[0m')
     test_dat = pd.read_csv('dataset_testset.csv', header=0, sep=';')
     test_samples = test_dat.iloc[:, :2]
     list_of_test_samples = [list(row) for row in test_samples.values]
@@ -277,14 +279,24 @@ def main():
     for sample, ground_truth in zip(list_of_test_samples, test_y):
         inferred_output = predict_sample(sample, example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out)
         inferred_outputs.append(inferred_output)
-        print(f'true model output: {ground_truth}, inferred output: {inferred_output}')
-    print(inferred_outputs)
-    #inferred_output = predict_sample(class_sample, example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out)
-    print('--------------------------------------------------------------------------------')
-    print('\033[1mClassifying new samples \033[0m')
-    #print(f'inferred output of {class_sample}: {round(inferred_output, 3)}')
+        print(f'true model output: {ground_truth}, inferred output: {round(inferred_output, 3)}')
 
-    # assess performance score of the model
+    # assessing performance score of the model
+    print('--------------------------------------------------------------------------------')
+    print('\033[1mAssessing the performance of our model\033[0m')
+    print(f'mean squared error: {mean_squared_error(test_y, inferred_outputs)}')
+
+    # testing different alphas
+    print('--------------------------------------------------------------------------------')
+    print('\033[1mTesting different alphas\033[0m')
+    alphas = np.linspace(0, 2, 21)
+    for a in alphas:
+        inferred_outputs = []
+        for sample, ground_truth in zip(list_of_test_samples, test_y):
+            inferred_output = predict_sample(sample, example.fuzzy_in_1,
+                                             example.fuzzy_in_2, example.fuzzy_out, round(a, 1))
+            inferred_outputs.append(inferred_output)
+        print(f'alpha: {round(a, 1)}, mean squared error: {round(mean_squared_error(test_y, inferred_outputs), 3)}')
 
 
 if __name__ == "__main__":
