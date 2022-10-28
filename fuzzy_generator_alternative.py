@@ -73,22 +73,40 @@ def calc_b(x, a, partition_in_1, partition_in_2):
     weights = np.array(weights)
     #b = sum(weights * y_p) / sum(weights)
     b = sum(weights * y_p) / sum(weights)
-    print(f'weights.shape: {weights.shape}, y_p.shape: {y_p.shape}')
     return b
 
 
-def calc_compatibility_degree(x, partition):
+def calculate_list_of_b(list_of_samples, alpha, partition_in_1, partition_in_2):
+    list_of_b = []
+    for in_1 in range(len(partition_in_1.labels)):
+        for in_2 in range(len(partition_in_2.labels)):
+            list_of_w = []
+            list_of_w_times_y = []
+            for sample in list_of_samples:
+                x_p = sample[0:2]  # get input values
+                y_p = sample[-1]  # get output value
+                in_1_val = partition_in_1.fuzzy_partition[in_1](x_p[0])
+                in_2_val = partition_in_2.fuzzy_partition[in_2](x_p[1])
+                mu = in_1_val * in_2_val
+                w = mu ** alpha
+                w_times_y = w * y_p
+                list_of_w.append(w)
+                list_of_w_times_y.append(w_times_y)
+            list_of_b.append(sum(list_of_w_times_y) / sum(list_of_w))
+    return label_1,
+
+
+
+
+def calc_compatibility_degree(in_1_max, in_2_max):
     """
     function to calculate the compability degree of a certain x with a fuzzy partition
     :param x: list of input values
     :param partition: list of membership functions in the form of gaussian distributions
     :return: degree of compatibility of input vector x to the fuzzy if-then-rule
     """
-    membership_value = membership_function(partition, x)
-    comp_deg = 1
-    for val in membership_value:
-        comp_deg *= val
-    return comp_deg
+    return in_1_max * in_2_max
+
 
 
 def membership_function(partition, x):
