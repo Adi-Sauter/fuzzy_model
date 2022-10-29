@@ -73,7 +73,7 @@ def calc_b(x, a, partition_in_1, partition_in_2):
     weights = np.array(weights)
     #b = sum(weights * y_p) / sum(weights)
     b = sum(weights * y_p) / sum(weights)
-    print(f'weights.shape: {weights.shape}, y_p.shape: {y_p.shape}')
+    #print(f'weights.shape: {weights.shape}, y_p.shape: {y_p.shape}')
     return b
 
 
@@ -257,11 +257,11 @@ def main():
     train_dat = pd.read_csv('dataset_test_outliers.csv', header=0, sep=';')
     # create list of lists, containing the individual samples in the form of [input_1, input_2, output]
     list_of_train_samples = [list(row) for row in train_dat.values]
-    alpha = 1
+    alpha = 1 
     # loop over all samples and fill the tables
     for sample in list_of_train_samples:
         prim_table, sec_table = fill_table(example.fuzzy_in_1, example.fuzzy_in_2, example.fuzzy_out,
-                                           sample, prim_table, sec_table, alpha)
+                                          sample, prim_table, sec_table, alpha)
     # printing the results
     print('--------------------------------------------------------------------------------')
     print('\033[1mPrimary rule table\033[0m'.center(75))
