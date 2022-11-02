@@ -254,7 +254,7 @@ def main():
     # create primary and secondary ruletable, filled with nan's
     prim_table, sec_table = create_tables(example.fuzzy_in_1.labels, example.fuzzy_in_2.labels)
     # read in dataset
-    train_dat = pd.read_csv('dataset_test.csv', header=0, sep=';')
+    train_dat = pd.read_csv('dataset_test_outliers.csv', header=0, sep=';')
     # create list of lists, containing the individual samples in the form of [input_1, input_2, output]
     list_of_train_samples = [list(row) for row in train_dat.values]
     alpha = 1 
